@@ -1,0 +1,206 @@
+#!/bin/bash
+
+# Zalkeen Network
+# Cluster Management Helper Utility
+#
+# Grim Kriegor <grimkriegor@krutt.org>
+# (c) GPLv3 2017
+
+set -e
+
+# Help text
+help_text="\
+Usage $(basename $0) OPERATION [OPTIONS]
+
+Operations:
+  -d, --deploy STACK	       Deploy stack
+  -r, --remove STACK	       Remove stack
+  -b, --start STACK 	       Start stack
+  -s, --stop STACK  	       Stop stack
+  -h, --help                   This help text
+"
+
+# Cluster data location
+CLUSTER_DATA="${CLUSTER_DATA:-/cluster}"
+
+# Source global cluster vars
+if [ -f $CLUSTER_DATA/env.global ]; then source $CLUSTER_DATA/env.global; fi
+
+# Architecture check
+arch="$(uname -m)"
+if [[ "$arch" == "armv"* ]]; then arch="armhf"; fi
+export ARCH="$arch"
+
+# Swarm mode check
+if docker node ls > /dev/null 2>&1; then
+  swarm_mode=true
+fi
+
+# Determine stack name and location
+function stack_id {
+  stack_dir="$CLUSTER_DATA/$stack"
+  if [[ $stack == */* ]]; then
+    stack_name="${stack//\//-}"
+  else
+    stack_name="$(basename -- "$(readlink -f -- "$stack_dir")")"
+  fi
+}
+
+# Identify stack and change dir to it's root folder
+function stack_id_chdir {
+  stack_id
+  cd $stack_dir
+}
+
+# Exit if no stack is specified
+function stack_check {
+  if [ "$stack" == "" ]; then
+    echo -e "No stack specified"
+    exit 1
+  fi
+}
+
+# Deploy
+function deploy {
+
+  ## Arguments
+  stack="$1"
+  mode="$2"
+
+  ## Exit if no stack is mentioned
+  stack_check
+
+  ## Identify and move to the stack's folder
+  stack_id_chdir
+
+  ## Create the default folder for volumes
+  [[ -d ./volumes ]] || mkdir ./volumes
+
+  ## Environment variables
+  rm .env
+  [[ -f "$CLUSTER_DATA/env.global" ]] && cat "$CLUSTER_DATA/env.global" >> .env
+  [[ -f "env" ]] &&  cat "env" >> .env
+  [[ -f "env.$arch" ]] && cat "env.$arch" >> .env
+  [[ -f "env.$mode" ]] && cat "env.$mode" >> .env
+
+  ## Optional bootstrap script
+  if [ -f bootstrap.sh ]; then chmod +x bootstrap.sh; source bootstrap.sh; fi
+
+  ## Debug stdout message
+  echo -e "Deploying stack '$stack_name' ($arch) from '$stack_dir' with:"
+  echo -e "$(cat .env)\n"
+
+  ## Deploy
+  if [ $swarm_mode ]; then
+    docker stack deploy --with-registry-auth -c docker-compose.yml "$stack_name"
+  else
+    COMPOSE_PROJECT_NAME="$stack_name" docker-compose up -d
+  fi
+}
+
+# Remove stack
+function remove {
+  ## Arguments
+  stack="$1"
+
+  # Identify and move to the stack's folder
+  if [ $swarm_mode ]; then
+    stack_id
+  else
+    stack_id_chdir
+  fi
+
+  ## Debug stdout message
+  echo -e "Removing stack '$stack_name' ($arch) from '$stack_dir'"
+
+  ## Remove
+  if [ $swarm_mode ]; then
+    docker stack remove "$stack_name"
+  else
+    COMPOSE_PROJECT_NAME="$stack_name" docker-compose down
+  fi
+}
+
+# Start stopped stack
+function start {
+  ## Arguments
+  stack="$1"
+
+  # Identify and move to the stack's folder
+  stack_id_chdir
+
+  ## Debug stdout message
+  echo -e "Starting stack '$stack_name' ($arch) from '$stack_dir'"
+
+  ## Start
+  if [ $swarm_mode ]; then
+    docker stack start "$stack"
+  else
+    docker-compose start
+  fi
+}
+
+# Stop running stack
+function stop {
+  ## Arguments
+  stack="$1"
+
+  # Identify and move to the stack's folder
+  stack_id_chdir
+
+  ## Debug stdout message
+  echo -e "Stopping stack '$stack_name' ($arch) from '$stack_dir'"
+
+  ## Stop
+  if [ $swarm_mode ]; then
+    docker stack stop "$stack"
+  else
+    docker-compose stop
+  fi
+}
+
+# Arguments
+script_args="$@"
+if [ $# -eq 0 ]; then
+    echo -e "$help_text"
+    echo -e "No operation specified."
+    exit 1
+
+else
+  while [ $# -ne 0 ]; do
+    case $1 in
+
+      # Print Help Text
+      -h | --help )
+	echo -e "$help_text"
+	exit 1
+      ;;
+
+      # Deploy stack
+      -d | --deploy )
+	deploy $2 $3
+	shift; shift
+      ;;
+
+      # Remove stack
+      -r | --remove )
+	remove $2
+	shift
+      ;;
+
+      # Start stack
+      -b | --start )
+	start $2
+	shift
+      ;;
+
+      # Start stack
+      -s | --stop )
+	stop $2
+	shift
+      ;;
+
+    esac
+    shift
+  done
+fi
