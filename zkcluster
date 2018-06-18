@@ -77,7 +77,7 @@ function deploy {
   [[ -d ./volumes ]] || mkdir ./volumes
 
   ## Environment variables
-  rm .env
+  [[ -f .env ]] && rm .env
   [[ -f "$CLUSTER_DATA/env.global" ]] && cat "$CLUSTER_DATA/env.global" >> .env
   [[ -f "env" ]] &&  cat "env" >> .env
   [[ -f "env.$arch" ]] && cat "env.$arch" >> .env
@@ -88,7 +88,7 @@ function deploy {
 
   ## Debug stdout message
   echo -e "Deploying stack '$stack_name' ($arch) from '$stack_dir' with:"
-  echo -e "$(cat .env)\n"
+  [[ -f .env ]] && echo -e "$(cat .env)\n"
 
   ## Deploy
   if [ $swarm_mode ]; then
