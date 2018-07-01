@@ -7,6 +7,7 @@
 # (c) GPLv3 2017
 
 set -e
+set -a
 
 # Help text
 help_text="\
@@ -82,6 +83,7 @@ function deploy {
   [[ -f "env" ]] &&  cat "env" >> .env
   [[ -f "env.$arch" ]] && cat "env.$arch" >> .env
   [[ -f "env.$mode" ]] && cat "env.$mode" >> .env
+  [[ -f ".env" ]] && source .env
 
   ## Optional bootstrap script
   if [ -f bootstrap.sh ]; then chmod +x bootstrap.sh; source bootstrap.sh; fi
