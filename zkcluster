@@ -18,11 +18,13 @@ Operations:
   -r, --remove STACK	       Remove stack
   -b, --start STACK 	       Start stack
   -s, --stop STACK  	       Stop stack
+  --backup                     Snapshot the entire cluster folder
   -h, --help                   This help text
 "
 
 # Cluster data location
 CLUSTER_DATA="${CLUSTER_DATA:-/cluster}"
+CLUSTER_DATA_BACKUP="${CLUSTER_DATA_BACKUP:-/backup}"
 
 # Source global cluster vars
 if [ -f $CLUSTER_DATA/env.global ]; then source $CLUSTER_DATA/env.global; fi
@@ -161,6 +163,17 @@ function stop {
   fi
 }
 
+# Backup entire data
+function backup {
+  mkdir -p "$CLUSTER_DATA_BACKUP"
+  date=$(date +"%Y%m%d%H%M")
+  tar \
+    --exclude="$CLUSTER_DATA/data" \
+    --numeric-owner -czvf \
+    "$CLUSTER_DATA_BACKUP/cluster-snapshot-$date.tar.xz" \
+    "$CLUSTER_DATA"
+}
+
 # Arguments
 script_args="$@"
 if [ $# -eq 0 ]; then
@@ -200,6 +213,11 @@ else
       -s | --stop )
 	stop $2
 	shift
+      ;;
+
+      # Backup
+      --backup )
+	backup
       ;;
 
     esac
