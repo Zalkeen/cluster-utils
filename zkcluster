@@ -14,11 +14,12 @@ help_text="\
 Usage $(basename $0) OPERATION [OPTIONS]
 
 Operations:
-  -d, --deploy STACK	       Deploy stack
-  -r, --remove STACK	       Remove stack
-  -b, --start STACK 	       Start stack
-  -s, --stop STACK  	       Stop stack
-  -h, --help                   This help text
+  -l, --list [services, tasks]   List running services or tasks
+  -d, --deploy STACK             Deploy stack
+  -r, --remove STACK             Remove stack
+  -b, --start STACK              Start stack
+  -s, --stop STACK               Stop stack
+  -h, --help                     This help text
 "
 
 # Cluster data location
@@ -161,6 +162,27 @@ function stop {
   fi
 }
 
+# List tasks
+function listTasks {
+  docker node ps $(docker node ls -q) | grep 'Running\|Preparing' | sed -r 's/ \\_ ([a-z._0-9\-]*)/\1    /p' | sed 's/\.[0-9]+/  /p'  | uniq
+}
+
+# List services
+function listServices {
+  docker service ls
+}
+
+# List tasks in nodes
+function list {
+  object="$1"
+  case $object in
+    tasks | tsk )
+      listTasks ;;
+    services | svc )
+      listServices ;;
+  esac
+}
+
 # Arguments
 script_args="$@"
 if [ $# -eq 0 ]; then
@@ -199,6 +221,12 @@ else
       # Start stack
       -s | --stop )
 	stop $2
+	shift
+      ;;
+
+      # List tasks
+      -l | --list )
+        list "$2"
 	shift
       ;;
 
