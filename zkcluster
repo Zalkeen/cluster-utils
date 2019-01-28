@@ -16,6 +16,7 @@ Usage $(basename $0) --option <argument>
 Options:
   -h, --help                   Show this screen.
   -l, --list (services|tasks)  List running services or tasks.
+  --backup                     Backup the entire cluster dir.
 
 Stack related:
   -d, --deploy <stack>         Deploy a stack.
@@ -26,6 +27,7 @@ Stack related:
 
 # Cluster data location
 CLUSTER_DATA="${CLUSTER_DATA:-/cluster}"
+CLUSTER_DATA_BACKUP="${CLUSTER_DATA_BACKUP:-/backup}"
 
 # Source global cluster vars
 if [ -f $CLUSTER_DATA/env.global ]; then source $CLUSTER_DATA/env.global; fi
@@ -185,6 +187,17 @@ function list {
   esac
 }
 
+# Backup entire data
+function backup {
+  mkdir -p "$CLUSTER_DATA_BACKUP"
+  date=$(date +"%Y%m%d%H%M")
+  tar \
+    --exclude="$CLUSTER_DATA/storage" \
+    --numeric-owner -czvf \
+    "$CLUSTER_DATA_BACKUP/cluster-snapshot-$date.tar.xz" \
+    "$CLUSTER_DATA"
+}
+
 # Arguments
 script_args="$@"
 if [ $# -eq 0 ]; then
@@ -230,6 +243,11 @@ else
       -l | --list )
         list "$2"
 	shift
+      ;;
+
+      # Backup
+      --backup )
+	backup
       ;;
 
     esac
