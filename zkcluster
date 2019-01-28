@@ -11,15 +11,17 @@ set -a
 
 # Help text
 help_text="\
-Usage $(basename $0) OPERATION [OPTIONS]
+Usage $(basename $0) --option <argument>
 
-Operations:
-  -l, --list [services, tasks]   List running services or tasks
-  -d, --deploy STACK             Deploy stack
-  -r, --remove STACK             Remove stack
-  -b, --start STACK              Start stack
-  -s, --stop STACK               Stop stack
-  -h, --help                     This help text
+Options:
+  -h, --help                   Show this screen.
+  -l, --list (services|tasks)  List running services or tasks.
+
+Stack related:
+  -d, --deploy <stack>         Deploy a stack.
+  -r, --remove <stack>         Remove a stack.
+  -b, --start <stack>          Start a stack.
+  -s, --stop <stack>           Stop a stack.
 "
 
 # Cluster data location
