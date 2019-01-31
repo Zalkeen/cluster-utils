@@ -99,7 +99,11 @@ function deploy {
 
   ## Deploy
   if [ $swarm_mode ]; then
-    docker stack deploy --with-registry-auth -c docker-compose.yml "$stack_name"
+    docker stack deploy \
+      --with-registry-auth \
+      -c docker-compose.yml \
+      --resolve-image never \
+      "$stack_name"
   else
     COMPOSE_PROJECT_NAME="$stack_name" docker-compose up -d
   fi
