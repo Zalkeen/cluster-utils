@@ -27,7 +27,7 @@ Stack related:
 
 # Cluster data location
 CLUSTER_DATA="${CLUSTER_DATA:-/cluster}"
-CLUSTER_DATA_BACKUP="${CLUSTER_DATA_BACKUP:-/backup}"
+CLUSTER_DATA_BACKUP="${CLUSTER_DATA_BACKUP:-$CLUSTER_DATA/storage/backup}"
 
 # Source global cluster vars
 if [ -f $CLUSTER_DATA/env.global ]; then source $CLUSTER_DATA/env.global; fi
