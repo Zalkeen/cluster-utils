@@ -195,11 +195,26 @@ function list {
 function backup {
   mkdir -p "$CLUSTER_DATA_BACKUP"
   date=$(date +"%Y%m%d%H%M")
+  CLUSTER_DATA_BACKUP_FILE="$CLUSTER_DATA_BACKUP/cluster-snapshot-$date.tar.xz"
   tar \
+    --numeric-owner \
     --exclude="$CLUSTER_DATA/storage" \
-    --numeric-owner -czvf \
-    "$CLUSTER_DATA_BACKUP/cluster-snapshot-$date.tar.xz" \
-    "$CLUSTER_DATA"
+    -czvf \
+    "$CLUSTER_DATA_BACKUP_FILE" \
+    "$CLUSTER_DATA" \
+    || true # Ignore error exit codes
+  if [[ ! -z "$CLUSTER_DATA_BACKUP_KEY" ]]; then
+    gpg --list-keys "$CLUSTER_DATA_BACKUP_KEY" \
+      || gpg --recv-keys "$CLUSTER_DATA_BACKUP_KEY"
+    gpg \
+      --batch \
+      --encrypt \
+      --trust-model always \
+      --recipient "$CLUSTER_DATA_BACKUP_KEY" \
+      --output "$CLUSTER_DATA_BACKUP_FILE.gpg" \
+      "$CLUSTER_DATA_BACKUP_FILE" \
+      && rm "$CLUSTER_DATA_BACKUP_FILE"
+  fi
 }
 
 # Arguments
