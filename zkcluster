@@ -172,7 +172,12 @@ function stop {
 
 # List tasks
 function listTasks {
-  docker node ps $(docker node ls -q) | grep 'Running\|Preparing' | sed -r 's/ \\_ ([a-z._0-9\-]*)/\1    /p' | sed 's/\.[0-9]+/  /p'  | uniq
+  docker node ps $(docker node ls -q) \
+    | grep 'Running\|Preparing' \
+    | sed -r 's/ \\_ ([a-z._0-9\-]*)/\1    /p' \
+    | sed 's/\.[0-9]+/  /p'  \
+    | sed 's/[ ]*$//g' \
+    | uniq
 }
 
 # List services
