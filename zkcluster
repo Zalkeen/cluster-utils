@@ -172,28 +172,33 @@ function stop {
 
 # List tasks
 function listTasks {
+  sort_col="$1"
   docker node ps $(docker node ls -q) \
     | grep 'Running\|Preparing' \
     | sed -r 's/ \\_ ([a-z._0-9\-]*)/\1    /p' \
     | sed 's/\.[0-9]+/  /p'  \
     | sed 's/[ ]*$//g' \
     | uniq \
-    | sort -k 4
+    | sort -k ${sort_col:-4}
 }
 
 # List services
 function listServices {
-  docker service ls
+  sort_col="$1"
+  docker service ls \
+    | tail -n +2 \
+    | sort -k ${sort_col:-2}
 }
 
 # List tasks in nodes
 function list {
   object="$1"
+  sort_col="$2"
   case $object in
     tasks | tsk )
-      listTasks ;;
+      listTasks "$sort_col" ;;
     services | svc )
-      listServices ;;
+      listServices "$sort_col" ;;
   esac
 }
 
@@ -266,7 +271,7 @@ else
 
       # List tasks
       -l | --list )
-        list "$2"
+        list "$2" "$3"
 	shift
       ;;
 
