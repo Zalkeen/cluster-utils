@@ -177,7 +177,8 @@ function listTasks {
     | sed -r 's/ \\_ ([a-z._0-9\-]*)/\1    /p' \
     | sed 's/\.[0-9]+/  /p'  \
     | sed 's/[ ]*$//g' \
-    | uniq
+    | uniq \
+    | sort -k 4
 }
 
 # List services
