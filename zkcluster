@@ -16,13 +16,14 @@ Usage $(basename $0) --option <argument>
 Options:
   -h, --help                   Show this screen.
   -l, --list (services|tasks)  List running services or tasks.
+  -s, --stats                  Displays resource usage statistics.
   --backup                     Backup the entire cluster dir.
 
 Stack related:
   -d, --deploy <stack>         Deploy a stack.
   -r, --remove <stack>         Remove a stack.
   -b, --start <stack>          Start a stack.
-  -s, --stop <stack>           Stop a stack.
+  -h, --stop <stack>           Stop a stack.
 "
 
 # Cluster data location
@@ -228,6 +229,29 @@ function backup {
   fi
 }
 
+# Get node array
+function getNodeArray {
+  echo $(docker node ls --format "{{.Hostname}}")
+}
+
+# Display node stats
+function displayNodeStats {
+  mode="$1"
+  node_array=($(getNodeArray))
+  shell_command="
+    uptime
+    docker stats --no-stream
+  "
+  for node in ${node_array[@]}; do
+    echo -e "\n$node"
+    if [[ "$node" == "$HOSTNAME" ]]; then
+      eval "$shell_command"
+    else
+      ssh $node "$shell_command"
+    fi
+  done
+}
+
 # Arguments
 script_args="$@"
 if [ $# -eq 0 ]; then
@@ -239,45 +263,42 @@ else
   while [ $# -ne 0 ]; do
     case $1 in
 
-      # Print Help Text
       -h | --help )
 	echo -e "$help_text"
 	exit 1
       ;;
 
-      # Deploy stack
-      -d | --deploy )
-	deploy $2 $3
-	shift; shift
-      ;;
-
-      # Remove stack
-      -r | --remove )
-	remove $2
-	shift
-      ;;
-
-      # Start stack
-      -b | --start )
-	start $2
-	shift
-      ;;
-
-      # Start stack
-      -s | --stop )
-	stop $2
-	shift
-      ;;
-
-      # List tasks
       -l | --list )
         list "$2" "$3"
 	shift
       ;;
 
-      # Backup
+      -s | --stats )
+	displayNodeStats
+      ;;
+
       --backup )
 	backup
+      ;;
+
+      -d | --deploy )
+	deploy $2 $3
+	shift; shift
+      ;;
+
+      -r | --remove )
+	remove $2
+	shift
+      ;;
+
+      -b | --start )
+	start $2
+	shift
+      ;;
+
+      -h | --stop )
+	stop $2
+	shift
       ;;
 
     esac
