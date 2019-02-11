@@ -239,7 +239,7 @@ function displayNodeStats {
   mode="$1"
   node_array=($(getNodeArray))
   shell_command="
-    uptime
+    uptime | sed 's/^ //g'
     docker stats --no-stream
   "
   for node in ${node_array[@]}; do
