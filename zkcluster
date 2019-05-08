@@ -24,6 +24,9 @@ Stack related:
   -r, --remove <stack>         Remove a stack.
   -b, --start <stack>          Start a stack.
   -h, --stop <stack>           Stop a stack.
+
+Cluster related:
+  -B, --balance <service>      Re-balance a service
 "
 
 # Cluster data location
@@ -252,6 +255,22 @@ function displayNodeStats {
   done
 }
 
+# Update service
+function serviceUpdate {
+  service="$1"
+  docker service update "$service" --force --detach=false
+}
+
+# Rebalance
+function rebalance {
+  service="$1"
+  if [[ $service == "all" ]]; then
+    docker service ls -q | xargs -i serviceUpdate "{}"
+    return
+  fi
+  serviceUpdate "$service"
+}
+
 # Arguments
 script_args="$@"
 if [ $# -eq 0 ]; then
@@ -298,6 +317,11 @@ else
 
       -h | --stop )
 	stop $2
+	shift
+      ;;
+
+      -B | --balance )
+	rebalance $2
 	shift
       ;;
 
