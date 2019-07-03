@@ -230,6 +230,7 @@ function backup {
       "$CLUSTER_DATA_BACKUP_FILE" \
       && rm "$CLUSTER_DATA_BACKUP_FILE"
   fi
+  echo -e "Backup created in: $CLUSTER_DATA_BACKUP_FILE"
 }
 
 # Get node array
