@@ -266,7 +266,7 @@ function serviceUpdate {
 function rebalance {
   service="$1"
   if [[ $service == "all" ]]; then
-    docker service ls -q | xargs -i serviceUpdate "{}"
+    docker service ls -q | xargs -i bash -c "serviceUpdate {}"
     return
   fi
   serviceUpdate "$service"
