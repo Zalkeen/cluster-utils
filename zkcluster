@@ -284,46 +284,46 @@ else
     case $1 in
 
       -h | --help )
-	echo -e "$help_text"
-	exit 1
+        echo -e "$help_text"
+        exit 1
       ;;
 
       -l | --list )
         list "$2" "$3"
-	shift
+        shift
       ;;
 
       -s | --stats )
-	displayNodeStats
+        displayNodeStats
       ;;
 
       --backup )
-	backup
+        backup
       ;;
 
       -d | --deploy )
-	deploy $2 $3
-	shift; shift
+        deploy $2 $3
+        shift; shift
       ;;
 
       -r | --remove )
-	remove $2
-	shift
+        remove $2
+        shift
       ;;
 
       -b | --start )
-	start $2
-	shift
+        start $2
+        shift
       ;;
 
       -h | --stop )
-	stop $2
-	shift
+        stop $2
+        shift
       ;;
 
       -B | --balance )
-	rebalance $2
-	shift
+        rebalance $2
+        shift
       ;;
 
     esac
