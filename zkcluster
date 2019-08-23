@@ -203,6 +203,10 @@ function list {
       listTasks "$sort_col" ;;
     services | svc )
       listServices "$sort_col" ;;
+    stacks | st )
+      docker stack ls ;;
+    nodes | no )
+      docker node ls ;;
   esac
 }
 
