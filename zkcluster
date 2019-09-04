@@ -19,6 +19,9 @@ Options:
   -s, --stats                  Displays resource usage statistics.
   --backup                     Backup the entire cluster dir.
 
+Service related:
+  --logs (service|task)        Fetch logs from service or task.
+
 Stack related:
   -d, --deploy <stack>         Deploy a stack.
   -r, --remove <stack>         Remove a stack.
@@ -68,6 +71,11 @@ function stack_check {
     echo -e "No stack specified"
     exit 1
   fi
+}
+
+function fetchLogs {
+  service=$1
+  docker service logs -f "$service"
 }
 
 # Deploy
@@ -303,6 +311,11 @@ else
 
       --backup )
         backup
+      ;;
+
+      --logs )
+        fetchLogs $2
+        shift
       ;;
 
       -d | --deploy )
