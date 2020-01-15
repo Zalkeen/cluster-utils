@@ -43,6 +43,9 @@ CLUSTER_DATA_BACKUP="${CLUSTER_DATA_BACKUP:-$CLUSTER_DATA/storage/backup}"
 # Source global cluster vars
 if [ -f $CLUSTER_DATA/env.global ]; then source $CLUSTER_DATA/env.global; fi
 
+# Default cluster name
+if [ -z $CLUSTER_NAME ]; then CLUSTER_NAME=$(hostname); fi
+
 # Architecture check
 arch="$(uname -m)"
 if [[ "$arch" == "armv"* ]]; then arch="armhf"; fi
@@ -226,7 +229,7 @@ function list {
 function backup {
   mkdir -p "$CLUSTER_DATA_BACKUP"
   date=$(date +"%Y%m%d%H%M")
-  CLUSTER_DATA_BACKUP_FILE="$CLUSTER_DATA_BACKUP/cluster-snapshot-$date.tar.xz"
+  CLUSTER_DATA_BACKUP_FILE="$CLUSTER_DATA_BACKUP/$CLUSTER_NAME-cluster-$date.tar.xz"
   tar \
     --numeric-owner \
     --exclude="$CLUSTER_DATA/storage" \
