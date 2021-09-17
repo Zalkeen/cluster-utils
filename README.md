@@ -1,3 +1,3 @@
-# Zalkeen Cluster Management Utils
+# cluster-utils
 
-WIP
+Cluster management utilities for Swarm and Kubernetes
